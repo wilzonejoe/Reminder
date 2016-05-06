@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Reminder</string>
+    <string name="login_text">Login</string>
+    <string name="register_text">Register</string>
+    <string name="username">username</string>
+    <string name="password">password</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="make_event">Make Event</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+</resources>
