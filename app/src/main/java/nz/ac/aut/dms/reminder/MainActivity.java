@@ -1,5 +1,6 @@
 package nz.ac.aut.dms.reminder;
 
+import android.content.Intent;
 import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -18,6 +19,7 @@ import android.view.MenuItem;
 import com.alamkanak.weekview.MonthLoader;
 import com.alamkanak.weekview.WeekView;
 import com.alamkanak.weekview.WeekViewEvent;
+import com.firebase.client.Firebase;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -31,6 +33,7 @@ public class MainActivity extends AppCompatActivity
     private static final int TYPE_WEEK_VIEW = 3;
     private int mWeekViewType = TYPE_THREE_DAY_VIEW;
     private WeekView mWeekView;
+    private Firebase firebaseRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +46,8 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Intent i = new Intent(MainActivity.this, AddEventActivity.class);
+                startActivity(i);
             }
         });
 
@@ -56,6 +59,8 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        firebaseRef = ((Reminder)getApplication()).getFirebaseRef();
 
         // Get a reference for the week view in the layout.
         mWeekView = (WeekView) findViewById(R.id.weekView);
@@ -178,6 +183,23 @@ public class MainActivity extends AppCompatActivity
     public List<WeekViewEvent> onMonthChange(int newYear, int newMonth) {
         // Populate the week view with some events.
         List<WeekViewEvent> events = new ArrayList<>();
+
+        //Get the calendar instance.
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 2);
+
+
+        //Get the calendar instance.
+        Calendar calendar1 = Calendar.getInstance();
+        calendar1.set(Calendar.HOUR_OF_DAY, 3);
+
+        //create an event
+        WeekViewEvent ev = new WeekViewEvent(1,"banter",calendar,calendar1);
+
+        if((ev.getStartTime().get(Calendar.MONTH)==newMonth-1) && ev.getStartTime().get(Calendar.YEAR)==(newYear) &&
+                (ev.getEndTime().get(Calendar.MONTH)==newMonth-1) && ev.getEndTime().get(Calendar.YEAR)==(newYear)) {
+            events.add(ev);
+        }
         return events;
     }
 }
