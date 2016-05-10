@@ -1,5 +1,6 @@
 package nz.ac.aut.dms.reminder;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.RectF;
 import android.os.AsyncTask;
@@ -28,10 +29,13 @@ import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
 import com.firebase.client.realtime.util.StringListReader;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
@@ -43,6 +47,8 @@ public class MainActivity extends AppCompatActivity
     private int mWeekViewType = TYPE_THREE_DAY_VIEW;
     private WeekView mWeekView;
     private Firebase firebaseRef;
+
+    private List<WeekViewEvent> events;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,10 +80,7 @@ public class MainActivity extends AppCompatActivity
 
         firebaseRef = new Firebase("https://reminderaut.firebaseio.com/");
 
-        Log.i("lol",firebaseRef.getAuth().getUid());
-
-        DisplayEvent de = new DisplayEvent();
-        de.execute();
+        events = new ArrayList<>();
 
 
         // Get a reference for the week view in the layout.
@@ -95,6 +98,42 @@ public class MainActivity extends AppCompatActivity
 
         mWeekView.setShowNowLine(true);
 
+        Firebase ref = new Firebase("https://reminderaut.firebaseio.com/").child(firebaseRef.getAuth().getUid()).child("date");
+        ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                events= new ArrayList<WeekViewEvent>();
+                int i = 1;
+                for (DataSnapshot postSnapshot : snapshot.getChildren()) {
+
+                    String title = postSnapshot.child("title").getValue().toString();
+
+                    Calendar startCal = Calendar.getInstance();
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.US);
+                    try {
+                        startCal.setTime(sdf.parse(postSnapshot.child("startDate").getValue().toString() + " " + postSnapshot.child("startTime").getValue().toString()));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+                    Calendar endCal = Calendar.getInstance();
+                    try {
+                        endCal.setTime(sdf.parse(postSnapshot.child("endDate").getValue().toString() + " " + postSnapshot.child("endTime").getValue().toString()));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+                    WeekViewEvent weekViewEvent = new WeekViewEvent(i,title,startCal,endCal);
+                    events.add(weekViewEvent);
+                }
+                mWeekView.notifyDatasetChanged();
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+                System.out.println("The read failed: " + firebaseError.getMessage());
+            }
+        });
 
     }
 
@@ -201,63 +240,18 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public List<WeekViewEvent> onMonthChange(int newYear, int newMonth) {
-        // Populate the week view with some events.
-        List<WeekViewEvent> events = new ArrayList<>();
-
-        //Get the calendar instance.
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 2);
-
-
-        //Get the calendar instance.
-        Calendar calendar1 = Calendar.getInstance();
-        calendar1.set(Calendar.HOUR_OF_DAY, 3);
-
-        //create an event
-        WeekViewEvent ev = new WeekViewEvent(1,"banter",calendar,calendar1);
-
-        if(checkDate(ev,newMonth,newYear)) {
-            events.add(ev);
+        ArrayList<WeekViewEvent> change = new ArrayList<>();
+        for (WeekViewEvent ev : events) {
+            if (checkDate(ev, newMonth, newYear)) {
+                Log.i("title",ev.getName());
+                change.add(ev);
+            }
         }
-        return events;
+        return change;
     }
 
-    private boolean checkDate(WeekViewEvent ev, int newMonth, int newYear){
-        return (ev.getStartTime().get(Calendar.MONTH)==newMonth-1) && ev.getStartTime().get(Calendar.YEAR)==(newYear) &&
-                (ev.getEndTime().get(Calendar.MONTH)==newMonth-1) && ev.getEndTime().get(Calendar.YEAR)==(newYear);
-    }
-
-
-    private class DisplayEvent extends AsyncTask<Void,Void,Void> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-
-            Firebase ref = new Firebase("https://reminderaut.firebaseio.com/").child(firebaseRef.getAuth().getUid()).child("date");
-            ref.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot snapshot) {
-                    for (DataSnapshot postSnapshot: snapshot.getChildren()) {
-                        WeekViewEvent weekViewEvent = new WeekViewEvent();
-                        weekViewEvent.setName(postSnapshot.child("title").getValue().toString());
-                    }
-                }
-                @Override
-                public void onCancelled(FirebaseError firebaseError) {
-                    System.out.println("The read failed: " + firebaseError.getMessage());
-                }
-            });
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-        }
+    private boolean checkDate(WeekViewEvent ev, int newMonth, int newYear) {
+        return (ev.getStartTime().get(Calendar.MONTH) == newMonth - 1) && ev.getStartTime().get(Calendar.YEAR) == (newYear) &&
+                (ev.getEndTime().get(Calendar.MONTH) == newMonth - 1) && ev.getEndTime().get(Calendar.YEAR) == (newYear);
     }
 }
