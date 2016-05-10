@@ -9,7 +9,6 @@ import com.firebase.client.Firebase;
  */
 public class Reminder extends Application {
     private Firebase firebaseRef;
-
     @Override
     public void onCreate() {
         super.onCreate();

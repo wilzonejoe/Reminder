@@ -14,15 +14,12 @@ import com.firebase.client.FirebaseError;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private Firebase firebaseRef;
     private Firebase.AuthResultHandler authResultHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
-        firebaseRef = ((Reminder)getApplication()).getFirebaseRef();
         // Create a handler to handle the result of the authentication
         authResultHandler = new Firebase.AuthResultHandler() {
             @Override
@@ -47,7 +44,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String username = usernameET.getText().toString();
                 String password = passwordET.getText().toString();
-                firebaseRef.authWithPassword(username,password, authResultHandler);
+                ((Reminder)getApplication()).getFirebaseRef().authWithPassword(username,password, authResultHandler);
             }
         });
         Button registerButton = (Button) findViewById(R.id.register_button);

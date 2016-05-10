@@ -2,9 +2,11 @@ package nz.ac.aut.dms.reminder;
 
 import android.content.Intent;
 import android.graphics.RectF;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -15,15 +17,22 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.alamkanak.weekview.MonthLoader;
 import com.alamkanak.weekview.WeekView;
 import com.alamkanak.weekview.WeekViewEvent;
+import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
+import com.firebase.client.realtime.util.StringListReader;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, MonthLoader.MonthChangeListener, WeekView.EventClickListener, WeekView.EventLongPressListener {
@@ -60,7 +69,16 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        firebaseRef = ((Reminder)getApplication()).getFirebaseRef();
+        View header = navigationView.getHeaderView(0);
+        TextView userNameTV = (TextView) header.findViewById(R.id.username_header);
+
+        firebaseRef = new Firebase("https://reminderaut.firebaseio.com/");
+
+        Log.i("lol",firebaseRef.getAuth().getUid());
+
+        DisplayEvent de = new DisplayEvent();
+        de.execute();
+
 
         // Get a reference for the week view in the layout.
         mWeekView = (WeekView) findViewById(R.id.weekView);
@@ -76,6 +94,8 @@ public class MainActivity extends AppCompatActivity
         mWeekView.setEventLongPressListener(this);
 
         mWeekView.setShowNowLine(true);
+
+
     }
 
     @Override
@@ -171,7 +191,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onEventClick(WeekViewEvent event, RectF eventRect) {
-
+        Log.i("event", event.getName());
     }
 
     @Override
@@ -196,10 +216,48 @@ public class MainActivity extends AppCompatActivity
         //create an event
         WeekViewEvent ev = new WeekViewEvent(1,"banter",calendar,calendar1);
 
-        if((ev.getStartTime().get(Calendar.MONTH)==newMonth-1) && ev.getStartTime().get(Calendar.YEAR)==(newYear) &&
-                (ev.getEndTime().get(Calendar.MONTH)==newMonth-1) && ev.getEndTime().get(Calendar.YEAR)==(newYear)) {
+        if(checkDate(ev,newMonth,newYear)) {
             events.add(ev);
         }
         return events;
+    }
+
+    private boolean checkDate(WeekViewEvent ev, int newMonth, int newYear){
+        return (ev.getStartTime().get(Calendar.MONTH)==newMonth-1) && ev.getStartTime().get(Calendar.YEAR)==(newYear) &&
+                (ev.getEndTime().get(Calendar.MONTH)==newMonth-1) && ev.getEndTime().get(Calendar.YEAR)==(newYear);
+    }
+
+
+    private class DisplayEvent extends AsyncTask<Void,Void,Void> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            Firebase ref = new Firebase("https://reminderaut.firebaseio.com/").child(firebaseRef.getAuth().getUid()).child("date");
+            ref.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot snapshot) {
+                    for (DataSnapshot postSnapshot: snapshot.getChildren()) {
+                        WeekViewEvent weekViewEvent = new WeekViewEvent();
+                        weekViewEvent.setName(postSnapshot.child("title").getValue().toString());
+                    }
+                }
+                @Override
+                public void onCancelled(FirebaseError firebaseError) {
+                    System.out.println("The read failed: " + firebaseError.getMessage());
+                }
+            });
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+        }
     }
 }

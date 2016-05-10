@@ -66,6 +66,7 @@
 
     </RelativeLayout>
     <EditText
+        android:id="@+id/add_event_description"
         android:hint="Description"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -76,6 +77,7 @@
         android:minLines="6"
         android:scrollbars="vertical" />
     <Button
+        android:id="@+id/add_event_button"
         android:text="@string/make_event"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
