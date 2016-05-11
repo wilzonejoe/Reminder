@@ -10,6 +10,7 @@ import android.widget.EditText;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class RegisterActivity extends AppCompatActivity {
@@ -26,15 +27,23 @@ public class RegisterActivity extends AppCompatActivity {
 
         final EditText usernameET = (EditText) findViewById(R.id.sign_up_page_username);
         final EditText passwordET = (EditText) findViewById(R.id.sign_up_page_password);
+        final EditText displayNameET = (EditText) findViewById(R.id.sign_up_page_display_name);
+
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String username = usernameET.getText().toString();
+                final String username = usernameET.getText().toString();
                 String password = passwordET.getText().toString();
+                final String displayName = displayNameET.getText().toString();
+
                 firebaseRef.createUser(username, password, new Firebase.ValueResultHandler<Map<String, Object>>() {
                     @Override
                     public void onSuccess(Map<String, Object> result) {
-                        Log.i("register","Successfully created user account with uid: " + result.get("uid"));
+                        Map<String,String> data = new HashMap<String, String>();
+                        data.put("displayName",displayName);
+                        data.put("email", username);
+                        firebaseRef.child(result.get("uid").toString()).setValue(data);
+                        onBackPressed();
                     }
                     @Override
                     public void onError(FirebaseError firebaseError) {

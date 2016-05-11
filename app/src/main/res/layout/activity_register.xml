@@ -19,8 +19,16 @@
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:inputType="textPassword"
         android:hint="@string/password"
         android:id="@+id/sign_up_page_password"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/display_name"
+        android:id="@+id/sign_up_page_display_name"/>
+
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

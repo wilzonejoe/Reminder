@@ -98,11 +98,13 @@ public class MainActivity extends AppCompatActivity
 
         mWeekView.setShowNowLine(true);
 
+        mWeekView.goToHour(Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
+
         Firebase ref = new Firebase("https://reminderaut.firebaseio.com/").child(firebaseRef.getAuth().getUid()).child("date");
         ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-                events= new ArrayList<WeekViewEvent>();
+                events.clear();
                 int i = 1;
                 for (DataSnapshot postSnapshot : snapshot.getChildren()) {
 
@@ -243,7 +245,6 @@ public class MainActivity extends AppCompatActivity
         ArrayList<WeekViewEvent> change = new ArrayList<>();
         for (WeekViewEvent ev : events) {
             if (checkDate(ev, newMonth, newYear)) {
-                Log.i("title",ev.getName());
                 change.add(ev);
             }
         }
