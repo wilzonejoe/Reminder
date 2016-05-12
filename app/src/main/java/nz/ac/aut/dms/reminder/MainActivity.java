@@ -76,9 +76,24 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         View header = navigationView.getHeaderView(0);
-        TextView userNameTV = (TextView) header.findViewById(R.id.username_header);
+        final TextView userNameTV = (TextView) header.findViewById(R.id.username_header);
+        final TextView emailTV = (TextView) header.findViewById(R.id.email_header);
 
         firebaseRef = new Firebase("https://reminderaut.firebaseio.com/");
+        firebaseRef.child(firebaseRef.getAuth().getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                userNameTV.setText(dataSnapshot.child("displayName").getValue().toString());
+                emailTV.setText(dataSnapshot.child("email").getValue().toString());
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
+
+
 
         events = new ArrayList<>();
 
@@ -149,27 +164,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
@@ -233,6 +227,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onEventClick(WeekViewEvent event, RectF eventRect) {
         Log.i("event", event.getName());
+        Intent intent = new Intent(MainActivity.this,ViewEventActivity.class);
+        startActivity(intent);
     }
 
     @Override
