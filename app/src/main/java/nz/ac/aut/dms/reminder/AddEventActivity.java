@@ -13,13 +13,13 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TimePicker;
 
-import com.firebase.client.Firebase;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 public class AddEventActivity extends AppCompatActivity {
     private EditText titleET;
@@ -29,14 +29,16 @@ public class AddEventActivity extends AppCompatActivity {
     private Button endTimeButton;
     private EditText descriptionText;
     private Button addEventButton;
-    private Firebase ref;
+    private DatabaseReference ref;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_event);
 
-        ref = ((Reminder)getApplication()).getFirebaseRef();
+        ref = FirebaseDatabase.getInstance().getReference();
+        mAuth = FirebaseAuth.getInstance();
 
         titleET = (EditText) findViewById(R.id.add_event_title);
         startDateButton = (Button) findViewById(R.id.add_event_start_date);
@@ -121,7 +123,7 @@ public class AddEventActivity extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             pd = new ProgressDialog(AddEventActivity.this);
-            pd.setMessage("banter");
+            pd.setMessage("loading");
             pd.show();
             startDate = startDateButton.getText().toString();
             endDate = endDateButton.getText().toString();
@@ -134,14 +136,7 @@ public class AddEventActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... params) {
-            Firebase fb = ref.child(ref.getAuth().getUid()).child("date").push();
-//            Map<String,String> map = new HashMap<>();
-//            map.put("title",title);
-//            map.put("start date",startDate);
-//            map.put("end date",endDate);
-//            map.put("start time", startTime);
-//            map.put("end time", endTime);
-//            map.put("description", description);
+            DatabaseReference fb = ref.child(mAuth.getCurrentUser().getUid()).child("Schedule").push();
 
             CustomDate cd = new CustomDate(startDate, endDate, startTime, endTime, title, description);
             fb.setValue(cd);

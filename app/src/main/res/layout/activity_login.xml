@@ -7,7 +7,9 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="nz.ac.aut.dms.reminder.LoginActivity">
+    tools:context="nz.ac.aut.dms.reminder.LoginActivity"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
 
     <LinearLayout
         android:orientation="vertical"
@@ -18,7 +20,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/username"
-            android:id="@+id/username_edit_text"/>
+            android:id="@+id/username_edit_text"
+            android:inputType="text"
+            android:maxLines="1"
+            android:singleLine="true"/>
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "849361112933",
+    "firebase_url": "https://reminderaut.firebaseio.com",
+    "project_id": "reminderaut",
+    "storage_bucket": "reminderaut.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:849361112933:android:8d83c73ca4c6efe8",
+        "android_client_info": {
+          "package_name": "nz.ac.aut.dms.reminder"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "849361112933-lkqq5pu1blhcaota5o3au3l5s5of3dd4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "nz.ac.zut.dms.reminder",
+            "certificate_hash": "6B7A034314D1114EF12EEF352A37779D263D9BEB"
+          }
+        },
+        {
+          "client_id": "849361112933-6ih4c0jk3860a6ae8nfnl2t12rmal1h2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCkXfyCH-i6J5dpBBRXzwhllSrOyTP7rfA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "849361112933-6ih4c0jk3860a6ae8nfnl2t12rmal1h2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,12 +1,9 @@
 package nz.ac.aut.dms.reminder;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.RectF;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
@@ -16,27 +13,26 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.alamkanak.weekview.MonthLoader;
 import com.alamkanak.weekview.WeekView;
 import com.alamkanak.weekview.WeekViewEvent;
-import com.firebase.client.DataSnapshot;
-import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
-import com.firebase.client.ValueEventListener;
-import com.firebase.client.realtime.util.StringListReader;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, MonthLoader.MonthChangeListener, WeekView.EventClickListener, WeekView.EventLongPressListener {
@@ -46,9 +42,11 @@ public class MainActivity extends AppCompatActivity
     private static final int TYPE_WEEK_VIEW = 3;
     private int mWeekViewType = TYPE_THREE_DAY_VIEW;
     private WeekView mWeekView;
-    private Firebase firebaseRef;
+    private FirebaseDatabase database;
 
     private List<WeekViewEvent> events;
+
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +54,8 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        mAuth = FirebaseAuth.getInstance();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -79,20 +79,26 @@ public class MainActivity extends AppCompatActivity
         final TextView userNameTV = (TextView) header.findViewById(R.id.username_header);
         final TextView emailTV = (TextView) header.findViewById(R.id.email_header);
 
-        firebaseRef = new Firebase("https://reminderaut.firebaseio.com/");
-        firebaseRef.child(firebaseRef.getAuth().getUid()).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                userNameTV.setText(dataSnapshot.child("displayName").getValue().toString());
-                emailTV.setText(dataSnapshot.child("email").getValue().toString());
-            }
+        database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference(mAuth.getCurrentUser().getUid());
 
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
+        myRef.addListenerForSingleValueEvent(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        // Get user value
+                        String displayName = dataSnapshot.child("display").getValue().toString();
+                        String disPlayEmail = dataSnapshot.child("email").getValue().toString();
+                        userNameTV.setText(displayName);
+                        emailTV.setText(disPlayEmail);
+                        // ...
+                    }
 
-            }
-        });
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
 
+                    }
+                });
 
 
         events = new ArrayList<>();
@@ -115,43 +121,45 @@ public class MainActivity extends AppCompatActivity
 
         mWeekView.goToHour(Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
 
-        Firebase ref = new Firebase("https://reminderaut.firebaseio.com/").child(firebaseRef.getAuth().getUid()).child("date");
-        ref.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                events.clear();
-                int i = 1;
-                for (DataSnapshot postSnapshot : snapshot.getChildren()) {
+        DatabaseReference calendarRef = database.getReference(mAuth.getCurrentUser().getUid()).child("Schedule");
 
-                    String title = postSnapshot.child("title").getValue().toString();
+        calendarRef.addValueEventListener(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
+                        // Get user value
+                        events.clear();
+                        int i = 1;
+                        for (DataSnapshot postSnapshot : snapshot.getChildren()) {
 
-                    Calendar startCal = Calendar.getInstance();
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.US);
-                    try {
-                        startCal.setTime(sdf.parse(postSnapshot.child("startDate").getValue().toString() + " " + postSnapshot.child("startTime").getValue().toString()));
-                    } catch (ParseException e) {
-                        e.printStackTrace();
+                            String title = postSnapshot.child("title").getValue().toString();
+
+                            Calendar startCal = Calendar.getInstance();
+                            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.US);
+                            try {
+                                startCal.setTime(sdf.parse(postSnapshot.child("startDate").getValue().toString() + " " + postSnapshot.child("startTime").getValue().toString()));
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+
+                            Calendar endCal = Calendar.getInstance();
+                            try {
+                                endCal.setTime(sdf.parse(postSnapshot.child("endDate").getValue().toString() + " " + postSnapshot.child("endTime").getValue().toString()));
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+
+                            WeekViewEvent weekViewEvent = new WeekViewEvent(i, title, startCal, endCal);
+                            events.add(weekViewEvent);
+                        }
+                        System.out.println("Size : "+events.size());
+                        mWeekView.notifyDatasetChanged();
                     }
 
-                    Calendar endCal = Calendar.getInstance();
-                    try {
-                        endCal.setTime(sdf.parse(postSnapshot.child("endDate").getValue().toString() + " " + postSnapshot.child("endTime").getValue().toString()));
-                    } catch (ParseException e) {
-                        e.printStackTrace();
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
                     }
-
-                    WeekViewEvent weekViewEvent = new WeekViewEvent(i,title,startCal,endCal);
-                    events.add(weekViewEvent);
-                }
-                mWeekView.notifyDatasetChanged();
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-                System.out.println("The read failed: " + firebaseError.getMessage());
-            }
-        });
-
+                });
     }
 
     @Override
@@ -227,7 +235,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onEventClick(WeekViewEvent event, RectF eventRect) {
         Log.i("event", event.getName());
-        Intent intent = new Intent(MainActivity.this,ViewEventActivity.class);
+        Intent intent = new Intent(MainActivity.this, ViewEventActivity.class);
         startActivity(intent);
     }
 
