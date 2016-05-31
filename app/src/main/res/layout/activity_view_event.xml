@@ -17,14 +17,18 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Title" />
+            android:text="Title"
+            android:textSize="22sp"
+            android:textStyle="bold" />
 
-        <Button
+        <TextView
+            android:id="@+id/titleTV"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:background="@android:color/transparent"
-            android:text="title" />
+            android:text="title"
+            android:textSize="22sp" />
 
     </RelativeLayout>
 
@@ -35,23 +39,28 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Start" />
+            android:text="Start"
+            android:textSize="22sp"
+            android:textStyle="bold" />
 
-        <Button
-            android:id="@+id/add_event_start_date"
+        <TextView
+            android:id="@+id/start_dateTV"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toLeftOf="@+id/add_event_start_time"
+            android:layout_marginRight="10dp"
+            android:layout_toLeftOf="@+id/start_timeTV"
             android:background="@android:color/transparent"
-            android:text="01/01/2016" />
+            android:text="01/01/2016"
+            android:textSize="22sp" />
 
-        <Button
-            android:id="@+id/add_event_start_time"
+        <TextView
+            android:id="@+id/start_timeTV"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:background="@android:color/transparent"
-            android:text="00:00" />
+            android:text="00:00"
+            android:textSize="22sp" />
 
     </RelativeLayout>
 
@@ -62,41 +71,28 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="End" />
-
-        <Button
-            android:id="@+id/add_event_end_date"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toLeftOf="@+id/add_event_end_time"
-            android:background="@android:color/transparent"
-            android:text="01/01/2016" />
-
-        <Button
-            android:id="@+id/add_event_end_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:background="@android:color/transparent"
-            android:text="00:00" />
-
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+            android:text="End"
+            android:textSize="22sp"
+            android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/end_dateTV"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Location" />
+            android:layout_marginRight="10dp"
+            android:layout_toLeftOf="@+id/end_timeTV"
+            android:background="@android:color/transparent"
+            android:text="01/01/2016"
+            android:textSize="22sp" />
 
-        <Button
+        <TextView
+            android:id="@+id/end_timeTV"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:background="@android:color/transparent"
-            android:text="building x" />
+            android:text="00:00"
+            android:textSize="22sp" />
 
     </RelativeLayout>
 
@@ -104,23 +100,23 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Description" />
+        android:text="Description"
+        android:textSize="22sp"
+        android:textStyle="bold" />
 
-    <EditText
+    <TextView
+        android:id="@+id/descriptionTV"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:gravity="top|left"
-        android:inputType="textMultiLine"
-        android:lines="8"
-        android:maxLines="10"
-        android:minLines="6"
-        android:scrollbars="vertical" />
+        android:text="description"
+        android:textSize="22sp" />
 
 
     <Button
+        android:id="@+id/share_nfc"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="save" />
+        android:text="share NFC" />
 
 
 </LinearLayout>

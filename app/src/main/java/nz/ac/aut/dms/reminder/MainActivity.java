@@ -1,5 +1,6 @@
 package nz.ac.aut.dms.reminder;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.RectF;
 import android.os.Bundle;
@@ -42,11 +43,14 @@ public class MainActivity extends AppCompatActivity
     private static final int TYPE_WEEK_VIEW = 3;
     private int mWeekViewType = TYPE_THREE_DAY_VIEW;
     private WeekView mWeekView;
-    private FirebaseDatabase database;
 
     private List<WeekViewEvent> events;
+    private List<String> eventId;
 
+    private FirebaseDatabase database;
     private FirebaseAuth mAuth;
+
+    private ProgressDialog pd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +106,7 @@ public class MainActivity extends AppCompatActivity
 
 
         events = new ArrayList<>();
+        eventId = new ArrayList<>();
 
 
         // Get a reference for the week view in the layout.
@@ -127,10 +132,16 @@ public class MainActivity extends AppCompatActivity
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
-                        // Get user value
+                        // Get calendar value
+                        pd = new ProgressDialog(MainActivity.this);
+                        pd.setMessage("updating calendar");
+                        pd.show();
                         events.clear();
                         int i = 1;
                         for (DataSnapshot postSnapshot : snapshot.getChildren()) {
+
+                            eventId.add(postSnapshot.getKey());
+                            System.out.println(postSnapshot.getKey());
 
                             String title = postSnapshot.child("title").getValue().toString();
 
@@ -151,9 +162,12 @@ public class MainActivity extends AppCompatActivity
 
                             WeekViewEvent weekViewEvent = new WeekViewEvent(i, title, startCal, endCal);
                             events.add(weekViewEvent);
+                            i++;
                         }
-                        System.out.println("Size : "+events.size());
                         mWeekView.notifyDatasetChanged();
+                        if(pd.isShowing()){
+                            pd.dismiss();
+                        }
                     }
 
                     @Override
@@ -234,8 +248,9 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onEventClick(WeekViewEvent event, RectF eventRect) {
-        Log.i("event", event.getName());
         Intent intent = new Intent(MainActivity.this, ViewEventActivity.class);
+        System.out.println((int)event.getId());
+        intent.putExtra("id",eventId.get((int)event.getId()-1));
         startActivity(intent);
     }
 

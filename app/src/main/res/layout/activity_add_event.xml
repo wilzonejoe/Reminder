@@ -32,14 +32,16 @@
             android:id="@+id/add_event_start_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="01/01/2016" />
+            android:text="01/01/2016"
+            android:background="@android:color/transparent"/>
 
         <Button
             android:layout_alignParentRight="true"
             android:id="@+id/add_event_start_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="00:00" />
+            android:text="00:00"
+            android:background="@android:color/transparent"/>
 
     </RelativeLayout>
 
@@ -57,14 +59,16 @@
             android:id="@+id/add_event_end_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="01/01/2016" />
+            android:text="01/01/2016"
+            android:background="@android:color/transparent"/>
 
         <Button
             android:layout_alignParentRight="true"
             android:id="@+id/add_event_end_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="00:00" />
+            android:text="00:00"
+            android:background="@android:color/transparent"/>
 
     </RelativeLayout>
     <EditText
@@ -81,7 +85,7 @@
     <Button
         android:id="@+id/add_event_button"
         android:text="@string/make_event"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
 </LinearLayout>

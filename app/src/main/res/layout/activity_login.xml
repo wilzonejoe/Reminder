@@ -23,13 +23,15 @@
             android:id="@+id/username_edit_text"
             android:inputType="text"
             android:maxLines="1"
-            android:singleLine="true"/>
+            android:singleLine="true"
+            android:text="wilson@lol.com"/>
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/password_edit_text"
             android:hint="@string/password"
-            android:inputType="textPassword" />
+            android:inputType="textPassword"
+            android:text="banter"/>
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
