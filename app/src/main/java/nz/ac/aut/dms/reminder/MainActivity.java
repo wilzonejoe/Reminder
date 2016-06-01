@@ -2,6 +2,8 @@ package nz.ac.aut.dms.reminder;
 
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothServerSocket;
+import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.graphics.RectF;
 import android.os.Bundle;
@@ -22,21 +24,22 @@ import com.alamkanak.weekview.MonthLoader;
 import com.alamkanak.weekview.WeekView;
 import com.alamkanak.weekview.WeekViewEvent;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
-import nz.ac.aut.dms.reminder.bt.ServerConnectThread;
+import nz.ac.aut.dms.reminder.bt.ReceivedThread;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, MonthLoader.MonthChangeListener, WeekView.EventClickListener, WeekView.EventLongPressListener {
@@ -64,7 +67,7 @@ public class MainActivity extends AppCompatActivity
 
         mAuth = FirebaseAuth.getInstance();
 
-        ServerConnectThread sct = new ServerConnectThread(BluetoothAdapter.getDefaultAdapter(),ShareBT.UUID);
+        ServerConnectThread sct = new ServerConnectThread(BluetoothAdapter.getDefaultAdapter(), ShareBT.UUID);
         sct.start();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -170,7 +173,7 @@ public class MainActivity extends AppCompatActivity
                             i++;
                         }
                         mWeekView.notifyDatasetChanged();
-                        if(pd.isShowing()){
+                        if (pd.isShowing()) {
                             pd.dismiss();
                         }
                     }
@@ -261,8 +264,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onEventClick(WeekViewEvent event, RectF eventRect) {
         Intent intent = new Intent(MainActivity.this, ViewEventActivity.class);
-        System.out.println((int)event.getId());
-        intent.putExtra("id",eventId.get((int)event.getId()-1));
+        intent.putExtra("id", eventId.get((int) event.getId() - 1));
         startActivity(intent);
     }
 
@@ -285,5 +287,61 @@ public class MainActivity extends AppCompatActivity
     private boolean checkDate(WeekViewEvent ev, int newMonth, int newYear) {
         return (ev.getStartTime().get(Calendar.MONTH) == newMonth - 1) && ev.getStartTime().get(Calendar.YEAR) == (newYear) &&
                 (ev.getEndTime().get(Calendar.MONTH) == newMonth - 1) && ev.getEndTime().get(Calendar.YEAR) == (newYear);
+    }
+
+    public class ServerConnectThread extends Thread {
+        private BluetoothSocket bTSocket;
+        private BluetoothAdapter adapter;
+        private UUID mUUID;
+
+        public ServerConnectThread(BluetoothAdapter bTAdapter, UUID mUUID) {
+            this.adapter = bTAdapter;
+            this.mUUID = mUUID;
+        }
+
+        @Override
+        public void run() {
+            acceptConnect(adapter, mUUID);
+        }
+
+        public void acceptConnect(BluetoothAdapter bTAdapter, UUID mUUID) {
+            BluetoothServerSocket temp = null;
+            try {
+                temp = bTAdapter.listenUsingRfcommWithServiceRecord("Service_Name", mUUID);
+            } catch (IOException e) {
+                Log.d("SERVERCONNECT", "Could not get a BluetoothServerSocket:" + e.toString());
+            }
+            while (true) {
+                try {
+                    bTSocket = temp.accept();
+                    System.out.println("accept");
+                } catch (IOException e) {
+                    Log.d("SERVERCONNECT", "Could not accept an incoming connection.");
+                    break;
+                }
+                if (bTSocket != null) {
+                    try {
+                        temp.close();
+                    } catch (IOException e) {
+                        Log.d("SERVERCONNECT", "Could not close ServerSocket:" + e.toString());
+                    }
+                    break;
+                }
+            }
+            if(bTSocket!=null) {
+                ReceivedThread receivedThread = new ReceivedThread(bTSocket);
+                synchronized (receivedThread) {
+                    receivedThread.start();
+                }
+            }
+        }
+
+        public void closeConnect() {
+            try {
+                bTSocket.close();
+            } catch (IOException e) {
+                Log.d("SERVERCONNECT", "Could not close connection:" + e.toString());
+            }
+        }
     }
 }

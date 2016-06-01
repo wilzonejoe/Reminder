@@ -3,27 +3,25 @@ package nz.ac.aut.dms.reminder;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Toast;
 
-import java.net.Inet4Address;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
 
-import nz.ac.aut.dms.reminder.bt.ConnectThread;
+import nz.ac.aut.dms.reminder.bt.SendThread;
 
 public class ShareBT extends AppCompatActivity {
 
@@ -33,11 +31,14 @@ public class ShareBT extends AppCompatActivity {
     private BluetoothAdapter ba;
 
     private Set<BluetoothDevice> devices;
+    private String data;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_share_bt);
+
+        data = getIntent().getStringExtra("data");
 
         IntentFilter intentFilter = new IntentFilter(Intent.ACTION_SEND);
         registerReceiver(br,intentFilter);
@@ -104,18 +105,18 @@ public class ShareBT extends AppCompatActivity {
                                     new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
-                                            ConnectThread ct = new ConnectThread();
+
                                             BluetoothDevice bd = null;
                                             for (BluetoothDevice b :devices){
                                                 if(b.getName().equals(strName)){
                                                     bd = b;
-                                                    System.out.println("lol");
                                                     break;
                                                 }
                                             }
 
                                             if(bd!= null){
-                                                ct.connect(bd,UUID);
+                                                ConnectThread ct = new ConnectThread(bd,UUID);
+                                                ct.start();
                                             }
                                             dialog.dismiss();
                                         }
@@ -136,5 +137,50 @@ public class ShareBT extends AppCompatActivity {
             Toast.makeText(ShareBT.this,"received something",Toast.LENGTH_SHORT).show();
         }
     };
+
+    public class ConnectThread extends Thread {
+
+        private BluetoothSocket bTSocket;
+        private BluetoothDevice bTDevice;
+        private UUID mUUID;
+        public ConnectThread(BluetoothDevice bTDevice, UUID mUUID){
+            this.bTDevice = bTDevice;
+            this.mUUID = mUUID;
+        }
+
+        @Override
+        public void run() {
+            BluetoothSocket temp = null;
+            try {
+                temp = bTDevice.createRfcommSocketToServiceRecord(mUUID);
+                bTSocket = temp;
+            } catch (IOException e) {
+                Log.d("CONNECTTHREAD","Could not create RFCOMM socket:" + e.toString());
+            }
+            try {
+                bTSocket.connect();
+                SendThread st = new SendThread(bTSocket,data +"?");
+                st.start();
+            } catch(IOException e) {
+                Log.d("CONNECTTHREAD","Could not connect: " + e.toString());
+                try {
+                    bTSocket.close();
+                } catch(IOException close) {
+                    Log.d("CONNECTTHREAD", "Could not close connection:" + e.toString());
+                }
+            }
+        }
+
+        public boolean cancel() {
+            try {
+                bTSocket.close();
+            } catch(IOException e) {
+                Log.d("CONNECTTHREAD","Could not close connection:" + e.toString());
+                return false;
+            }
+            return true;
+        }
+
+    }
 
 }
