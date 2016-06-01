@@ -1,6 +1,7 @@
 package nz.ac.aut.dms.reminder;
 
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.graphics.RectF;
 import android.os.Bundle;
@@ -35,6 +36,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+import nz.ac.aut.dms.reminder.bt.ServerConnectThread;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, MonthLoader.MonthChangeListener, WeekView.EventClickListener, WeekView.EventLongPressListener {
 
@@ -60,6 +63,9 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         mAuth = FirebaseAuth.getInstance();
+
+        ServerConnectThread sct = new ServerConnectThread(BluetoothAdapter.getDefaultAdapter(),ShareBT.UUID);
+        sct.start();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -141,7 +147,6 @@ public class MainActivity extends AppCompatActivity
                         for (DataSnapshot postSnapshot : snapshot.getChildren()) {
 
                             eventId.add(postSnapshot.getKey());
-                            System.out.println(postSnapshot.getKey());
 
                             String title = postSnapshot.child("title").getValue().toString();
 
@@ -238,6 +243,13 @@ public class MainActivity extends AppCompatActivity
                     mWeekView.setTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, getResources().getDisplayMetrics()));
                     mWeekView.setEventTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, getResources().getDisplayMetrics()));
                 }
+                break;
+
+            case R.id.nav_logout:
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(intent);
+                mAuth.signOut();
+                finish();
                 break;
         }
 

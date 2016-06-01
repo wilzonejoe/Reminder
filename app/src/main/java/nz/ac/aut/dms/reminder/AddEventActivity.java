@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -17,8 +18,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 public class AddEventActivity extends AppCompatActivity {
@@ -51,9 +54,41 @@ public class AddEventActivity extends AppCompatActivity {
         addEventButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new AddEvent().execute();
+                SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.US);
+                String start = startDateButton.getText().toString() + " " + startTimeButton.getText().toString();
+                String end = endDateButton.getText().toString() + " " + endTimeButton.getText().toString();
+
+                Date startDate = Calendar.getInstance().getTime();
+                Date endDate = Calendar.getInstance().getTime();
+                try {
+                    startDate = dateFormatter.parse(start);
+                    endDate = dateFormatter.parse(end);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                if (startDate.before(endDate)) {
+                    new AddEvent().execute();
+                }
+                else{
+                    AlertDialog.Builder builder = new AlertDialog.Builder(AddEventActivity.this);
+                    builder.setMessage("start date is after end date").show();
+                }
             }
         });
+
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
+        SimpleDateFormat timeFormatter = new SimpleDateFormat("HH:mm", Locale.US);
+        Calendar newCalendar = Calendar.getInstance();
+
+        String currentDate = dateFormatter.format(newCalendar.getTime());
+        String currentHour = timeFormatter.format(newCalendar.getTime());
+
+        startDateButton.setText(currentDate);
+        endDateButton.setText(currentDate);
+
+        startTimeButton.setText(currentHour);
+        endTimeButton.setText(currentHour);
+
 
         setOnClickDatePicker(startDateButton);
         setOnClickDatePicker(endDateButton);
@@ -62,11 +97,17 @@ public class AddEventActivity extends AppCompatActivity {
     }
 
     public void setOnClickDatePicker(final Button editDate) {
+        String currentDate = editDate.getText().toString();
+        final String[] dateSplit = currentDate.split("/");
+        final int year = Integer.parseInt(dateSplit[2]);
+        final int month = Integer.parseInt(dateSplit[1]);
+        final int day = Integer.parseInt(dateSplit[0]);
+
         editDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
-                Calendar newCalendar = Calendar.getInstance();
+
                 DatePickerDialog datePickerDialog = new DatePickerDialog(AddEventActivity.this, new DatePickerDialog.OnDateSetListener() {
 
                     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
@@ -75,7 +116,8 @@ public class AddEventActivity extends AppCompatActivity {
                         editDate.setText(dateFormatter.format(newDate.getTime()));
                     }
 
-                }, newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
+                }, year, month, day);
+                datePickerDialog.updateDate(year, month, day);
                 datePickerDialog.show();
 
             }
@@ -84,12 +126,13 @@ public class AddEventActivity extends AppCompatActivity {
 
 
     public void setOnClickTimePickerEditor(final Button timeButton) {
+        String currentTime = timeButton.getText().toString();
+        String[] timeSplit = currentTime.split(":");
+        final int hour = Integer.parseInt(timeSplit[0]);
+        final int minute = Integer.parseInt(timeSplit[1]);
         timeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Calendar mcurrentTime = Calendar.getInstance();
-                int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
-                int minute = mcurrentTime.get(Calendar.MINUTE);
                 TimePickerDialog mTimePicker;
                 mTimePicker = new TimePickerDialog(AddEventActivity.this, new TimePickerDialog.OnTimeSetListener() {
                     @Override
@@ -111,14 +154,15 @@ public class AddEventActivity extends AppCompatActivity {
         });
     }
 
-    private class AddEvent extends AsyncTask<Void,Void,Void>{
+    private class AddEvent extends AsyncTask<Void, Void, Void> {
         private ProgressDialog pd;
         private String startDate;
         private String endDate;
         private String startTime;
-        private  String endTime;
-        private  String title;
-        private  String description;
+        private String endTime;
+        private String title;
+        private String description;
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();

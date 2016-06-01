@@ -23,6 +23,10 @@
                     android:icon="@drawable/ic_week_view"
                     android:title="Week View" />
             </group>
+            <item
+                android:id="@+id/nav_logout"
+                android:icon="@android:drawable/ic_lock_power_off"
+                android:title="Week View" />
         </menu>
     </item>
 

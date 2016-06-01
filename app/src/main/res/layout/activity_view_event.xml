@@ -118,5 +118,11 @@
         android:layout_height="wrap_content"
         android:text="share NFC" />
 
+    <Button
+        android:id="@+id/share_bt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="share BT" />
+
 
 </LinearLayout>

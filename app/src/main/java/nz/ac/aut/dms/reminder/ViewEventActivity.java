@@ -138,6 +138,16 @@ public class ViewEventActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        Button shareBT = (Button) findViewById(R.id.share_bt);
+        shareBT.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ViewEventActivity.this, ShareBT.class);
+                intent.putExtra("data",jsonText);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
